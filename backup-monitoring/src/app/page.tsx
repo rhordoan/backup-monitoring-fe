@@ -1,103 +1,237 @@
-import Image from "next/image";
+"use client";
+import React from 'react';
+import { motion, Variants } from 'framer-motion';
+import {
+  LayoutGrid,
+  HardDrive,
+  CircleDot,
+  Activity,
+  CheckCircle2,
+  MoreVertical,
+  ArrowRightCircle,
+  File,
+  Server,
+  Database,
+  XCircle,
+  Clock,
+  AlertTriangle,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+// Animation variants for staggering children
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+    },
+  },
+};
+
+// A simple component to render the small bar charts in the stat cards
+const StatChart = ({ data, colorClass }: { data: number[], colorClass: string }) => (
+  <div className="flex items-end h-10 space-x-1">
+    {data.map((value, index) => (
+      <motion.div
+        key={index}
+        className="w-full rounded-t-sm"
+        style={{ backgroundColor: colorClass, originY: 1 }}
+        initial={{ scaleY: 0 }}
+        animate={{ scaleY: value / 100 }}
+        transition={{ duration: 0.8, delay: index * 0.05, type: 'spring' }}
+      />
+    ))}
+  </div>
+);
+
+const StatCard = ({ icon: Icon, title, value, subValue, trend, chartData, chartColor }: any) => (
+  <motion.div
+    variants={itemVariants}
+    whileHover={{ y: -5, transition: { duration: 0.2 } }}
+    className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm"
+  >
+    <div className="flex justify-between items-start mb-2">
+      <div>
+        <p className="text-sm text-gray-500">{title}</p>
+        <p className="text-2xl font-bold text-gray-800">{value}</p>
+        <p className={`text-xs ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>{subValue}</p>
+      </div>
+      <Icon className="text-gray-400" size={20} />
     </div>
+    <StatChart data={chartData} colorClass={chartColor} />
+  </motion.div>
+);
+
+const ClusterHealthItem = ({ status, name, jobs, usage }: any) => {
+    const statusColors: { [key: string]: string } = {
+        green: "bg-green-500",
+        yellow: "bg-yellow-500",
+        orange: "bg-orange-500",
+        blue: "bg-blue-500"
+    };
+
+    const usageBadgeStyles: { [key: string]: string } = {
+      green: "bg-[#13275c] text-white",
+      orange: "bg-gray-200 text-gray-800",
+      blue: "bg-[#13275c] text-white",
+    };
+
+    return (
+        <motion.div
+          variants={itemVariants}
+          className="bg-gray-50 hover:bg-gray-100 transition-colors duration-200 p-4 rounded-lg flex items-center justify-between mb-3 last:mb-0"
+        >
+            <div className="flex items-center">
+                <span className={`w-2.5 h-2.5 rounded-full ${statusColors[status]} mr-4`}></span>
+                <div>
+                    <p className="text-sm font-semibold text-gray-900">{name}</p>
+                    <p className="text-xs text-gray-500">{jobs}</p>
+                </div>
+            </div>
+            <span className={`px-3 py-1 text-xs font-bold rounded-full ${usageBadgeStyles[status]}`}>
+                {usage}% used
+            </span>
+        </motion.div>
+    );
+};
+
+const RecentJobItem = ({ icon: Icon, title, time, statusColor }: any) => (
+    <motion.div
+      variants={itemVariants}
+      className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
+    >
+        <div className="flex items-center">
+            <Icon className={`${statusColor}`} size={18} />
+            <p className="text-sm text-gray-700 ml-3">{title}</p>
+        </div>
+        <p className="text-xs text-gray-500">{time}</p>
+    </motion.div>
+);
+
+
+const HomePage = () => {
+    const router = useRouter();
+    const statCardsData = [
+        { title: "Active Clusters", value: "12", subValue: "+2 this week", trend: "up", chartData: [40, 50, 60, 80, 70, 90, 85], chartColor: '#a7f3d0', icon: LayoutGrid },
+        { title: "Total Capacity", value: "847 TB", subValue: "12.3% used", trend: "up", chartData: [30, 40, 55, 60, 75, 65, 80], chartColor: '#d1d5db', icon: HardDrive },
+        { title: "Backup Success Rate", value: "98.7%", subValue: "-0.3% vs last week", trend: "down", chartData: [80, 85, 90, 75, 88, 95, 92], chartColor: '#fde68a', icon: CircleDot },
+        { title: "Active Jobs", value: "247", subValue: "+15 today", trend: "up", chartData: [50, 60, 70, 65, 80, 75, 90], chartColor: '#a7f3d0', icon: Activity }
+    ];
+
+    const clusterHealthData = [
+        { status: "green", name: "Production-East-01", jobs: "45 active jobs", usage: 85 },
+        { status: "green", name: "Production-West-02", jobs: "38 active jobs", usage: 72 },
+        { status: "orange", name: "DR-Central-01", jobs: "23 active jobs", usage: 45 },
+        { status: "green", name: "Dev-Test-03", jobs: "12 active jobs", usage: 34 }
+    ];
+
+    const recentJobsData = [
+        { icon: CheckCircle2, title: "SQL Server Backup", time: "2 min ago", statusColor: "text-green-500" },
+        { icon: Clock, title: "File Server Sync", time: "5 min ago", statusColor: "text-yellow-500" },
+        { icon: CheckCircle2, title: "VM Snapshot", time: "12 min ago", statusColor: "text-green-500" },
+        { icon: AlertTriangle, title: "Exchange Backup", time: "25 min ago", statusColor: "text-red-500" },
+    ];
+
+
+  return (
+    <motion.div
+      className="bg-gray-50 p-1"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div variants={itemVariants} className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-500">AI-powered backup infrastructure monitoring and insights</p>
+      </motion.div>
+
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        variants={containerVariants}
+      >
+        {statCardsData.map(card => <StatCard key={card.title} {...card} />)}
+      </motion.div>
+
+      <motion.div
+        className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+        variants={containerVariants}
+      >
+        {/* Cluster Health Summary */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col"
+        >
+          <div className="flex-1">
+            <div className="flex items-center mb-4">
+              <CheckCircle2 className="text-green-500 mr-2" size={20} />
+              <h2 className="text-lg font-semibold text-gray-800">Cluster Health Summary</h2>
+            </div>
+            <motion.div variants={containerVariants}>
+              {clusterHealthData.map(cluster => <ClusterHealthItem key={cluster.name} {...cluster} />)}
+            </motion.div>
+          </div>
+           <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => router.push('/clusters')}
+            className="w-full mt-4 text-center text-sm font-medium text-gray-800 hover:bg-gray-100 py-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
+            View All Clusters <ArrowRightCircle className="ml-2" size={16} />
+          </motion.button>
+        </motion.div>
+
+        {/* Backup Status Overview */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col"
+        >
+          <div className="flex-1">
+            <div className="flex items-center mb-4">
+                <Activity className="text-blue-500 mr-2" size={20} />
+                <h2 className="text-lg font-semibold text-gray-800">Backup Status Overview</h2>
+            </div>
+            <div className="grid grid-cols-3 gap-4 mb-6 text-center">
+                <div>
+                    <p className="text-3xl font-bold text-green-600">234</p>
+                    <p className="text-sm text-gray-500">Successful</p>
+                </div>
+                <div>
+                    <p className="text-3xl font-bold text-yellow-500">13</p>
+                    <p className="text-sm text-gray-500">Running</p>
+                </div>
+                <div className="bg-red-50 p-3 rounded-lg">
+                    <p className="text-3xl font-bold text-red-600">3</p>
+                    <p className="text-sm text-gray-500">Failed</p>
+                </div>
+            </div>
+             <h3 className="text-sm font-semibold text-gray-600 mb-2">RECENT JOBS</h3>
+            <motion.div variants={containerVariants}>
+                {recentJobsData.map(job => <RecentJobItem key={job.title} {...job} />)}
+            </motion.div>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => router.push('/workflows')}
+            className="w-full mt-4 text-center text-sm font-medium text-gray-800 hover:bg-gray-100 py-2 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center">
+              View All Workflows <ArrowRightCircle className="ml-2" size={16} />
+          </motion.button>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
-}
+};
+
+export default HomePage;
